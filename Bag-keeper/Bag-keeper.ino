@@ -2,9 +2,13 @@
 #include <Wire.h> // Wire library
 #include <Keypad.h> // keypad library
 #include <LiquidCrystal_I2C.h>  // LCD Library
+#include <Servo.h> // Servo Library
+
+Servo myServo;
 
 
 LiquidCrystal_I2C lcd(0x3F, 16, 2); // LCD
+
 
 // keypad constants -->
 const byte ROWS = 4;
@@ -20,6 +24,8 @@ byte colPins[COLS] = {5, 4, 3, 2};
 Keypad keypad = Keypad(makeKeymap(keys), rowPins, colPins, ROWS, COLS);
 // _____________________________________________________________________
 
+const int ServoPin = 10;
+
 
 char MAINPASSWORD[4]={};
 char MATCHEDPASSWORD[4]={};
@@ -29,26 +35,22 @@ void setup(){
   Serial.begin(9600);
   lcd.init();
   lcd.backlight();
+  myServo.attach(ServoPin);
     // startWork();
 
 }
 
-void startWork(){
-if(isPassExist()){
-      ReEnterPassword();
-      isPasswordCorrect();
-      tenSecondCounting();
-    }else{
-      TakePassword();
-      tenSecondCounting();
-    }
-}
 
 
-
+bool isAPressed = false;
 void loop(){
+  lcd.setCursor(0,0);
+  lcd.print("Press 'B' to");
+  lcd.setCursor(0,1);
+  lcd.print("continue: ");
   char key = keypad.getKey();
-  if(key == 'D'){
+  if(key == 'B'){
+    lcd.clear();
     if(isPassExist()){ // if true, that means pass already set last time;
       ReEnterPassword(); 
       if(isPasswordCorrect()){ 
@@ -56,8 +58,17 @@ void loop(){
         lcd.print("Password Correct!");
         delay(1500);
         lcd.clear();
-        tenSecondCounting();
-        PassSetToEmpty(MAINPASSWORD); // when pass correct, set password will be reset.
+
+        while(isAPressed==false){ 
+            char O_key = keypad.getKey();
+            lcd.setCursor(0, 0);
+            lcd.print("A TO OPEN.");
+            PassSetToEmpty(MAINPASSWORD); // when pass correct, set password will be reset.
+            if(O_key == 'A'){
+              OpeningDoor();
+              isAPressed = true;
+            }
+        }
       }else{
         lcd.setCursor(0, 0);
         lcd.print("Password In-correct!");
@@ -65,26 +76,17 @@ void loop(){
         lcd.clear();
         PassSetToEmpty(MATCHEDPASSWORD); // when pass incorrect, make the input again.
       }
-    }
-
-    if(!isPassExist()){
+    }else{
       Serial.println("No Exist");
       TakePassword();
-      tenSecondCounting();
+      // DoorOpenClose();
     }
   }
 
-  // if(isDoorOpen){
-  //   startWork();
-  // }
-  
-
+  if(isAPressed){
+      isAPressed = false;
+  }
 }
-
-
-// setup components function.
-
-
 
 
 // Checked if password is already exists -->
@@ -108,13 +110,11 @@ void TakePassword(){
     char key = keypad.getKey();
     if(key){
       MAINPASSWORD[passwordIndex] = key;
-      lcd.print("T");
-      // Serial.print(key);
+      lcd.print("*");
       passwordIndex++;
     }
   }
   passwordIndex=0;
-  // Serial.println();
 }
 
 // Re-enter the password -->
@@ -128,7 +128,7 @@ void ReEnterPassword(){
     char key = keypad.getKey();
     if(key){
       MATCHEDPASSWORD[passwordIndex] = key;
-      lcd.print("R");
+      lcd.print("*");
       passwordIndex++;
     }
   }
@@ -168,23 +168,43 @@ void PassSetToEmpty(char arr[]){
 
 
 
-// SERVO
+// SERVO MOTOR -->
+void ClosingDoor(){
+  lcd.clear();
+  lcd.setCursor(0,0);
+  lcd.print("DOOR CLOSING!");
+  for(int i=180; i >=0; i-=30){
+    myServo.write(i);
+    delay(700);
+  }
+  lcd.clear();
+}
+
+
+void OpeningDoor(){
+  lcd.clear();
+  lcd.setCursor(0,0);
+  lcd.print("DOOR OPENING!");
+  for(int i = 0; i <= 180; i+=30){
+    myServo.write(i);
+    delay(700);
+  }
+
+  tenSecondCounting();
+}
+
 void tenSecondCounting(){
+  lcd.clear();
   int i;
-  for(i = 3; i > 0; i--){
+  for(i = 9; i > 0; i--){
       lcd.setCursor(0, 0);
-      lcd.print("Time end in: " );
+      lcd.print("Door close in: " );
       lcd.print(i);
       lcd.cursor();
       delay(1000);
       lcd.clear();
   }
    if(i == 0){
-      lcd.setCursor(0, 0);
-      lcd.print("Time's up!");
-      lcd.setCursor(0, 1);
-      lcd.print("Door Closing!");
-      delay(2000);
-      lcd.clear();
+      ClosingDoor();
     }
 }
