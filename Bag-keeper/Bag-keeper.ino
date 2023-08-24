@@ -36,7 +36,7 @@ void setup(){
   lcd.init();
   lcd.backlight();
   myServo.attach(ServoPin);
-    // startWork();
+  myServo.write(0);
 
 }
 
@@ -167,31 +167,31 @@ void PassSetToEmpty(char arr[]){
 }
 
 
-
 // SERVO MOTOR -->
-void ClosingDoor(){
-  lcd.clear();
-  lcd.setCursor(0,0);
-  lcd.print("DOOR CLOSING!");
-  for(int i=180; i >=0; i-=30){
-    myServo.write(i);
-    delay(700);
-  }
-  lcd.clear();
-}
-
 
 void OpeningDoor(){
   lcd.clear();
   lcd.setCursor(0,0);
   lcd.print("DOOR OPENING!");
-  for(int i = 0; i <= 180; i+=30){
+  for(int i = 0; i <= 50; i+=10){
     myServo.write(i);
     delay(700);
   }
 
   tenSecondCounting();
 }
+void ClosingDoor(){
+  lcd.clear();
+  lcd.setCursor(0,0);
+  lcd.print("DOOR CLOSING!");
+  for(int i=50; i >=0; i-=10){
+    myServo.write(i);
+    delay(700);
+  }
+  lcd.clear();
+}
+
+
 
 void tenSecondCounting(){
   lcd.clear();
