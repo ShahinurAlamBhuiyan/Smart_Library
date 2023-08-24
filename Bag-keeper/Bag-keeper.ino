@@ -1,4 +1,3 @@
-
 #include <Wire.h> // Wire library
 #include <Keypad.h> // keypad library
 #include <LiquidCrystal_I2C.h>  // LCD Library
@@ -30,6 +29,7 @@ const int ServoPin = 10;
 char MAINPASSWORD[4]={};
 char MATCHEDPASSWORD[4]={};
 int passwordIndex=0;
+const int BUZZER_PIN = 11;  // Buzzer pin
 
 void setup(){
   Serial.begin(9600);
@@ -37,13 +37,14 @@ void setup(){
   lcd.backlight();
   myServo.attach(ServoPin);
   myServo.write(0);
-
+  pinMode(BUZZER_PIN, OUTPUT);
 }
 
 
-
+int incorrectCount = 0;
 bool isAPressed = false;
 void loop(){
+  // digitalWrite(BUZZER_PIN, HIGH);
   lcd.setCursor(0,0);
   lcd.print("Press 'B' to");
   lcd.setCursor(0,1);
@@ -74,6 +75,7 @@ void loop(){
         lcd.print("Password In-correct!");
         delay(1500);
         lcd.clear();
+        incorrectCount++;
         PassSetToEmpty(MATCHEDPASSWORD); // when pass incorrect, make the input again.
       }
     }else{
@@ -93,6 +95,10 @@ void loop(){
 
   if(isAPressed){
       isAPressed = false;
+  }
+
+  if(incorrectCount >= 1){
+    BuzzerIncorrect();
   }
 }
 
@@ -181,30 +187,33 @@ void ClosingDoor(){
   lcd.clear();
   lcd.setCursor(0,0);
   lcd.print("DOOR CLOSING!");
-  for(int i=50; i >=0; i-=10){
+  for(float i=60; i >=0; i-=0.5){
     myServo.write(i);
-    delay(700);
+    delay(15);
   }
   lcd.clear();
 }
 
 
+// Opening door
 void OpeningDoor(){
   lcd.clear();
   lcd.setCursor(0,0);
   lcd.print("DOOR OPENING!");
-  for(int i = 0; i <= 50; i+=10){
+  for(float i = 0; i <= 60; i+=0.5){
     myServo.write(i);
-    delay(700);
+    delay(15);
   }
 
   tenSecondCounting();
 }
 
+
+// Time Counting -->
 void tenSecondCounting(){
   lcd.clear();
   int i;
-  for(i = 9; i > 0; i--){
+  for(i = 3; i > 0; i--){
       lcd.setCursor(0, 0);
       lcd.print("Door close in: " );
       lcd.print(i);
@@ -216,3 +225,53 @@ void tenSecondCounting(){
       ClosingDoor();
     }
 }
+
+
+
+// Buzzer -->
+char masterRealPass[4]={'0','0','0','0'};
+char checkMasterPass[4]={};
+int masterIndex=0;
+void BuzzerIncorrect(){
+  for(int i= 0; i <= 1; i++){
+    digitalWrite(BUZZER_PIN, HIGH);
+    delay(500);
+    digitalWrite(BUZZER_PIN, LOW);
+    delay(500);
+  }
+
+
+  lcd.setCursor(0, 0);
+  lcd.print("Give Master Pass:");
+  lcd.setCursor(0, 1);
+  while(masterIndex < 4){
+    char key = keypad.getKey();
+    if(key){
+      checkMasterPass[masterIndex] = key;
+      lcd.print("*");
+      masterIndex++;
+    }
+  }
+
+  int size = sizeof(masterRealPass); 
+  bool areEqual = (memcmp(masterRealPass, checkMasterPass, size) == 0);
+  while(areEqual && isPassExist()){
+    incorrectCount=0;
+    PassSetToEmpty(MAINPASSWORD);
+    lcd.clear();
+    OpeningDoor();
+  }
+  // lcd.clear();
+  if(!areEqual){
+    masterIndex = 0;
+    lcd.clear();
+    PassSetToEmpty(checkMasterPass);
+    BuzzerIncorrect();
+
+  }
+}
+
+
+
+
+
