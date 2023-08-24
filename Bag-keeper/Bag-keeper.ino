@@ -36,6 +36,7 @@ void setup(){
   lcd.init();
   lcd.backlight();
   myServo.attach(ServoPin);
+  myServo.write(0);
 
 }
 
