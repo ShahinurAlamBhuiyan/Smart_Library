@@ -181,7 +181,7 @@ void ClosingDoor(){
   lcd.clear();
   lcd.setCursor(0,0);
   lcd.print("DOOR CLOSING!");
-  for(int i=180; i >=0; i-=30){
+  for(int i=50; i >=0; i-=10){
     myServo.write(i);
     delay(700);
   }
@@ -193,7 +193,7 @@ void OpeningDoor(){
   lcd.clear();
   lcd.setCursor(0,0);
   lcd.print("DOOR OPENING!");
-  for(int i = 0; i <= 180; i+=30){
+  for(int i = 0; i <= 50; i+=10){
     myServo.write(i);
     delay(700);
   }
