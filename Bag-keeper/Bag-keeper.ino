@@ -44,19 +44,18 @@ void setup(){
 int incorrectCount = 0;
 bool isAPressed = false;
 void loop(){
-  // digitalWrite(BUZZER_PIN, HIGH);
   lcd.setCursor(0,0);
-  lcd.print("Press 'B' to");
+  lcd.print("Press 'C' to");
   lcd.setCursor(0,1);
   lcd.print("continue: ");
   char key = keypad.getKey();
-  if(key == 'B'){
+  if(key == 'C'){
     lcd.clear();
     if(isPassExist()){ // if true, that means pass already set last time;
       ReEnterPassword(); 
       if(isPasswordCorrect()){ 
         lcd.setCursor(0, 0);
-        lcd.print("Password Correct!");
+        lcd.print("Password Valid!");
         delay(1500);
         lcd.clear();
 
@@ -72,14 +71,13 @@ void loop(){
         }
       }else{
         lcd.setCursor(0, 0);
-        lcd.print("Password In-correct!");
+        lcd.print("Password Invalid!");
         delay(1500);
         lcd.clear();
         incorrectCount++;
         PassSetToEmpty(MATCHEDPASSWORD); // when pass incorrect, make the input again.
       }
-    }else{
-      Serial.println("No Exist");
+    }else{ // If password wrong!.
       TakePassword();
       while(isAPressed==false){ 
             char O_key = keypad.getKey();
@@ -97,7 +95,7 @@ void loop(){
       isAPressed = false;
   }
 
-  if(incorrectCount >= 1){
+  if(incorrectCount >= 3){ // If entered wrong password 3 times. 
     BuzzerIncorrect();
   }
 }
@@ -213,7 +211,7 @@ void OpeningDoor(){
 void tenSecondCounting(){
   lcd.clear();
   int i;
-  for(i = 3; i > 0; i--){
+  for(i = 5; i > 0; i--){
       lcd.setCursor(0, 0);
       lcd.print("Door close in: " );
       lcd.print(i);
@@ -229,11 +227,12 @@ void tenSecondCounting(){
 
 
 // Buzzer -->
-char masterRealPass[4]={'0','0','0','0'};
+char masterRealPass[4]={'*','0','#','D'};
 char checkMasterPass[4]={};
 int masterIndex=0;
+
 void BuzzerIncorrect(){
-  for(int i= 0; i <= 1; i++){
+  for(int i= 1; i <=4 ; i++){
     digitalWrite(BUZZER_PIN, HIGH);
     delay(500);
     digitalWrite(BUZZER_PIN, LOW);
@@ -267,7 +266,6 @@ void BuzzerIncorrect(){
     lcd.clear();
     PassSetToEmpty(checkMasterPass);
     BuzzerIncorrect();
-
   }
 }
 
