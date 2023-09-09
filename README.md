@@ -1,6 +1,7 @@
 # Smart_Library
 Smart_library is a library management system.
 
+
 ## Features & Components
 ### Main-Door
 - If anyone enter the library door will open automatically
@@ -43,3 +44,9 @@ Smart_library is a library management system.
 - Photo-resistor (LDR)
 - LED (as bulb)
 - wire
+
+ ## Project Report -->
+https://shorturl.at/qFQT2
+
+## Project Recording (Addressing my course teacher)
+https://shorturl.at/nFNSZ
